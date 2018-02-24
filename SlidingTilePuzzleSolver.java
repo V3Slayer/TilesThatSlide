@@ -1,4 +1,7 @@
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.lang.Math;
 
 /**
  * In this assignment, you will implement Uniform Cost Search as well as A* Search for Sliding Tile Puzzles (i.e., 8-puzzle, 15-puzzle, etc).
@@ -29,6 +32,53 @@ public class SlidingTilePuzzleSolver {
 	 */
 	public static ArrayList<SlidingTilePuzzle> uniformCostSearch(SlidingTilePuzzle start) {
 		// STEP 3: Implement Uniform Cost Search.  Read the comment above carefully for what this method should return.
+		SlidingTilePuzzle node = start;
+		ArrayList<SlidingTilePuzzle> successors = start.getSuccessors();
+		MinHeapPQ<SlidingTilePuzzle> frontier = new MinHeapPQ<SlidingTilePuzzle>();
+		frontier.ignoreHereForTesting();
+		int pathCost = 0;
+		
+		frontier.offer(start, 0);
+		while (!frontier.isEmpty())
+		{
+			if (frontier.peek)
+			start = frontier.poll();
+			HashMap<SlidingTilePuzzle, Integer> generatedSet = new HashMap<SlidingTilePuzzle, Integer>();
+			
+			
+			// You can then add to it with put:
+			generatedSet.put(start, 4);
+			//SlidingTilePuzzle backpoint = generatedSet.get(pathCost);
+			
+			// You can check if you've seen a puzzle state previously with something like:
+			if (generatedSet.containsKey(start)) {
+				// do something here.
+			}
+			
+			// you can find a state's f value with get			
+			
+			// Likewise, you can use a HashMap to store backpointers:
+			HashMap<SlidingTilePuzzle, SlidingTilePuzzle> back = new HashMap<SlidingTilePuzzle, SlidingTilePuzzle>();
+			
+/*			for (SlidingTilePuzzle s : successors) {
+				back.put(s, start);
+			}*/
+			//SlidingTilePuzzle backpoint = frontier.poll();
+			for (SlidingTilePuzzle STP : successors)
+			{
+				SlidingTilePuzzle backpointer = back.get(STP);
+				int g = 0;
+				while (backpointer != null) {
+					g++;
+					backpointer = back.get(backpointer);
+				}
+				if (generatedSet.containsKey(STP) == false || generatedSet.containsKey(STP) && generatedSet.get(STP) > g) {
+					//Based on if it is in explored or frontier then insert to frontier
+					//generatedSEt.put(s, g);
+					generatedSet.put(STP, g);
+				}
+			}
+		}
 		return null;
 	}
 	
@@ -116,11 +166,45 @@ class NumMisplacedTiles implements SlidingTilePuzzleHeuristic {
 		// that are not currently in the correct place.  The SlidingTilePuzzle class provides methods
 		// for accessing the tile numbers (see the get method in that class) as well as the dimensions 
 		// of the puzzle (number of rows and columns).
-		return 0;
+		
+		int numMisplaced = 0;
+		int i = 1;
+		int rows = state.numRows();
+		int columns = state.numColumns();
+		int length = rows * columns;
+		
+		for (int j = 0; j < rows; j++) {
+			for (int k = 0; k < columns; k++) {
+				if (i != length) System.out.println("I: " + i + " Tile: " + state.getTile(j, k));
+				
+				if (i < length && state.getTile(j, k) != i) {
+					numMisplaced++;
+				}
+				i++;
+			}
+		}
+		System.out.println("I: " + 0 + " Tile: " + state.getTile(rows - 1, columns - 1));
+		return numMisplaced;
 	}
 }
 
 class ManhattanDistance implements SlidingTilePuzzleHeuristic {
+	
+	
+	static class Tuple {
+		int x;
+		int y;
+		
+		Tuple() {
+			x = 0;
+			y = 0;
+		}
+		
+		Tuple(int a, int b) {
+			x = a;
+			y = b;
+		}
+	}
 	
 	@Override
 	public int h(SlidingTilePuzzle state) {
@@ -128,7 +212,65 @@ class ManhattanDistance implements SlidingTilePuzzleHeuristic {
 		// correct locations in the goal state.  The SlidingTilePuzzle class provides methods
 		// for accessing the tile numbers (see the get method in that class) as well as the dimensions 
 		// of the puzzle (number of rows and columns).
-		return 0;
+		
+		//Manhattan distance is the sum of the absolute values of the differences of the coordinates
+		//ex. if x = (a,b) and y = (c,d) the distance between x and y is as follows
+		//	|a - c| + |b - d|
+		
+		
+		//A/N: One way to get the correct coords for a fixed number is to compare if correct num is > columns in a row.
+		//If so then proceed to iterate the row and add the column length to the difference
+
+		int i = 0;
+		int sum = 0;
+		int rows = state.numRows();
+		int columns = state.numColumns();
+		int length = rows * columns;
+
+		
+		Tuple[] goalState = new Tuple[length];
+		
+		
+		for (int j = 0; j < rows; j++) {
+			for (int k = 0; k < columns; k++) {
+				goalState[i] = new Tuple(j, k);
+				i++;
+			}
+		}
+		
+		String s = "";
+		for (int j = 0; j < goalState.length; j++) {
+			s += "(" + goalState[j].x + ", " + goalState[j].y + ")\t";
+			s += "\n";
+		}
+		System.out.println(s);
+		
+		
+		i = 1;
+		int x;
+		int y;
+
+		for (int j = 0; j < rows; j++) {
+			for (int k = 0; k < columns; k++) {
+				int pos = state.getTile(j, k);
+				if (pos == 0) {
+					pos = 9;
+					x = goalState[pos - 1].x;
+					y = goalState[pos - 1].y;
+					System.out.println("0 is " + (Math.abs(j - x) + Math.abs(k - y)) + " away");
+					sum += (Math.abs(j - x) + Math.abs(k - y));
+				}
+				else if (pos != i) {
+					x = goalState[pos - 1].x;
+					y = goalState[pos - 1].y;
+					//System.out.println("j : " + j + " k: " + k + " x: " + x + " y: " + y);
+					System.out.println(pos + " is " + (Math.abs(j - x) + Math.abs(k - y)) + " away");
+					sum += (Math.abs(j - x) + Math.abs(k - y));
+				}
+				i++;
+			}
+		}
+		return sum;
 	}
 }
 
