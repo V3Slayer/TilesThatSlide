@@ -30,57 +30,74 @@ public class SlidingTilePuzzleSolver {
 	 *
 	 * @return The solution path, i.e., the sequence of states from the start state to the goal state.  Returns null if instance has no solution.
 	 */
+	
+	//KERFUFFLE: The actual start to the puzzle is not printed
 	public static ArrayList<SlidingTilePuzzle> uniformCostSearch(SlidingTilePuzzle start) {
 		// STEP 3: Implement Uniform Cost Search.  Read the comment above carefully for what this method should return.
 		SlidingTilePuzzle node = start;
-		ArrayList<SlidingTilePuzzle> successors = start.getSuccessors();
+		ArrayList<SlidingTilePuzzle> successors = new ArrayList<SlidingTilePuzzle>();
 		MinHeapPQ<SlidingTilePuzzle> frontier = new MinHeapPQ<SlidingTilePuzzle>();
-		frontier.ignoreHereForTesting();
-		int pathCost = 0;
+		//frontier.ignoreHereForTesting();
+		HashMap<SlidingTilePuzzle, Integer> explored = new HashMap<SlidingTilePuzzle, Integer>();
+		HashMap<SlidingTilePuzzle, SlidingTilePuzzle> back = new HashMap<SlidingTilePuzzle, SlidingTilePuzzle>();
 		
 		frontier.offer(start, 0);
 		while (!frontier.isEmpty())
 		{
-			if (frontier.peek)
-			start = frontier.poll();
-			HashMap<SlidingTilePuzzle, Integer> generatedSet = new HashMap<SlidingTilePuzzle, Integer>();
+
+
+			int p = frontier.peekPriority();
+			node = frontier.poll();
+			//System.out.println(node.getSuccessors());
+			//System.out.println(p);
+			if(node.isGoalState()) {
+				SlidingTilePuzzle solution = node;
+				while (back.get(solution) != null) {
+					//System.out.println(explored.get(solution));
+					successors.add(0, solution);
+					solution = back.get(solution);
+					
+				}
+				//System.out.println("????");
+				//System.out.println(node);
+				return successors;
+			}
+			
 			
 			
 			// You can then add to it with put:
-			generatedSet.put(start, 4);
-			//SlidingTilePuzzle backpoint = generatedSet.get(pathCost);
-			
-			// You can check if you've seen a puzzle state previously with something like:
-			if (generatedSet.containsKey(start)) {
-				// do something here.
-			}
+
+			explored.put(node, p);
+			//System.out.println("\np: " + p + " \nnode:\n " + node);
+			p++;
+
 			
 			// you can find a state's f value with get			
 			
 			// Likewise, you can use a HashMap to store backpointers:
-			HashMap<SlidingTilePuzzle, SlidingTilePuzzle> back = new HashMap<SlidingTilePuzzle, SlidingTilePuzzle>();
 			
-/*			for (SlidingTilePuzzle s : successors) {
-				back.put(s, start);
-			}*/
-			//SlidingTilePuzzle backpoint = frontier.poll();
-			for (SlidingTilePuzzle STP : successors)
+			//System.out.println("Start Loop");
+			for (SlidingTilePuzzle STP : node.getSuccessors())
 			{
-				SlidingTilePuzzle backpointer = back.get(STP);
-				int g = 0;
-				while (backpointer != null) {
-					g++;
-					backpointer = back.get(backpointer);
-				}
-				if (generatedSet.containsKey(STP) == false || generatedSet.containsKey(STP) && generatedSet.get(STP) > g) {
-					//Based on if it is in explored or frontier then insert to frontier
-					//generatedSEt.put(s, g);
-					generatedSet.put(STP, g);
+				if (!explored.containsKey(STP)) {
+					if (!frontier.inPQ(STP)) {
+						//System.out.println(p);
+						frontier.offer(STP, p);
+						back.put(STP, node);
+					}
+					else if (frontier.inPQ(STP) && frontier.getPriority(STP) > p)
+					{
+						//System.out.println("ELSE IF");
+						node = STP;
+						back.put(STP, node);
+					}
 				}
 			}
 		}
 		return null;
 	}
+	
+
 	
 	/**
 	 * Solves an instance of the Sliding Tile Puzzle using A* Search.
@@ -90,8 +107,79 @@ public class SlidingTilePuzzleSolver {
 	 *
 	 * @return The solution path, i.e., the sequence of states from the start state to the goal state.  Returns null if instance has no solution.
 	 */
+	
+	//KERFUFFLE: There is a fuckton of nulls
 	public static ArrayList<SlidingTilePuzzle> AStarSearch(SlidingTilePuzzle start, SlidingTilePuzzleHeuristic h) {
 		// STEP 4: Implement A* Search.  Read the comment above carefully for what this method should return.
+		SlidingTilePuzzle node = start;
+		ArrayList<SlidingTilePuzzle> successors = new ArrayList<SlidingTilePuzzle>();
+		MinHeapPQ<SlidingTilePuzzle> frontier = new MinHeapPQ<SlidingTilePuzzle>();
+		//frontier.ignoreHereForTesting();
+		HashMap<SlidingTilePuzzle, Integer> explored = new HashMap<SlidingTilePuzzle, Integer>();
+		HashMap<SlidingTilePuzzle, SlidingTilePuzzle> back = new HashMap<SlidingTilePuzzle, SlidingTilePuzzle>();
+		
+		frontier.offer(start, 0);
+		while (!frontier.isEmpty())
+		{
+
+
+			int cost = frontier.peekPriority();
+			node = frontier.poll();
+			
+			if(node.isGoalState()) {
+				SlidingTilePuzzle solution = node;
+				while (back.get(solution) != null) {
+					//System.out.println(explored.get(solution));
+					successors.add(0, solution);
+					solution = back.get(solution);
+					
+				}
+				//System.out.println("????");
+				//System.out.println(node);
+				return successors;
+			}
+			
+			
+			
+			
+			// You can then add to it with put:
+
+			explored.put(node, cost);
+			//System.out.println("\np: " + p + " \nnode:\n " + node);
+			//p++;
+
+			
+			// you can find a state's f value with get			
+			
+			// Likewise, you can use a HashMap to store backpointers:
+			
+			//System.out.println("Start Loop");
+			//boolean isBetter;
+			for (SlidingTilePuzzle STP : node.getSuccessors())
+			{
+				cost = cost + h.h(STP);
+				if(!explored.containsKey(STP) || cost < explored.get(STP)) {
+					//explored.put(STP, cost + h.h(STP));
+					back.put(STP, node);
+					
+					if(!explored.containsKey(STP))
+					{
+						frontier.offer(STP, cost + h.h(STP));
+					}
+					else
+					{
+						frontier.offer(STP, cost + h.h(STP));
+						
+					}
+					explored.put(STP, cost + h.h(STP));
+				}
+					
+				//if (isBetter)
+				//{
+				//	cost++;
+				//}
+			}
+		}		
 		return null;
 	}
 	
@@ -175,7 +263,8 @@ class NumMisplacedTiles implements SlidingTilePuzzleHeuristic {
 		
 		for (int j = 0; j < rows; j++) {
 			for (int k = 0; k < columns; k++) {
-				if (i != length) System.out.println("I: " + i + " Tile: " + state.getTile(j, k));
+				if (i != length)
+					//System.out.println("I: " + i + " Tile: " + state.getTile(j, k));
 				
 				if (i < length && state.getTile(j, k) != i) {
 					numMisplaced++;
@@ -183,7 +272,7 @@ class NumMisplacedTiles implements SlidingTilePuzzleHeuristic {
 				i++;
 			}
 		}
-		System.out.println("I: " + 0 + " Tile: " + state.getTile(rows - 1, columns - 1));
+		//System.out.println("I: " + 0 + " Tile: " + state.getTile(rows - 1, columns - 1));
 		return numMisplaced;
 	}
 }
@@ -257,14 +346,14 @@ class ManhattanDistance implements SlidingTilePuzzleHeuristic {
 					pos = 9;
 					x = goalState[pos - 1].x;
 					y = goalState[pos - 1].y;
-					System.out.println("0 is " + (Math.abs(j - x) + Math.abs(k - y)) + " away");
+					//System.out.println("0 is " + (Math.abs(j - x) + Math.abs(k - y)) + " away");
 					sum += (Math.abs(j - x) + Math.abs(k - y));
 				}
 				else if (pos != i) {
 					x = goalState[pos - 1].x;
 					y = goalState[pos - 1].y;
 					//System.out.println("j : " + j + " k: " + k + " x: " + x + " y: " + y);
-					System.out.println(pos + " is " + (Math.abs(j - x) + Math.abs(k - y)) + " away");
+					//System.out.println(pos + " is " + (Math.abs(j - x) + Math.abs(k - y)) + " away");
 					sum += (Math.abs(j - x) + Math.abs(k - y));
 				}
 				i++;

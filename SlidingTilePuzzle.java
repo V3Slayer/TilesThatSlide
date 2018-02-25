@@ -251,11 +251,14 @@ public class SlidingTilePuzzle {
 	public String toString() {
 		String s = "";
 		for (int i = 0; i < tiles.length; i++) {
+			//A/N: Did this so the output looked nicer
+			s += "\n";
 			for (int j = 0; j < tiles[0].length; j++) {
 				s += tiles[i][j] + "\t";
 			}
 			s += "\n";
 		}
+
 		return s;
 	}
 	

@@ -66,14 +66,17 @@ public class SlidingTileComparison {
 		//             If total is the sum of the number of expanded states across the 10 runs at a given length, and you do total/10
 		//             you will get the wrong answer (if total is an int).
 		
-		SlidingTilePuzzle test = new SlidingTilePuzzle();
+		SlidingTilePuzzle puzzle1 = new SlidingTilePuzzle(3, 3, 15);
+		System.out.println("THIS IS THE PUZZLE:\n" + puzzle1 + "\n");
+		SlidingTilePuzzle puzzle2 = puzzle1;
 		//SlidingTilePuzzleSolver temp = new SlidingTilePuzzleSolver();
-		NumMisplacedTiles blah = new NumMisplacedTiles();
-		ManhattanDistance blah2 = new ManhattanDistance();
-		SlidingTilePuzzleSolver solve = new SlidingTilePuzzleSolver();
-		System.out.println(solve.uniformCostSearch(test) + "\nEnd");
-		System.out.println(test.toString());
-		System.out.println(blah.h(test));
-		System.out.println(blah2.h(test));
+		NumMisplacedTiles numMisTiles = new NumMisplacedTiles();
+		ManhattanDistance mDistance = new ManhattanDistance();
+		//SlidingTilePuzzleSolver solve = new SlidingTilePuzzleSolver();
+		System.out.println("Start\n" + SlidingTilePuzzleSolver.uniformCostSearch(puzzle1) + "\nEnd");
+		System.out.println("Start\n" + SlidingTilePuzzleSolver.AStarSearch(puzzle2, numMisTiles));
+		//System.out.println(test.toString());
+		//System.out.println(blah.h(test));
+		//System.out.println(blah2.h(test));
 	}
 }
