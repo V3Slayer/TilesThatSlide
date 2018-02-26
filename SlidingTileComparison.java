@@ -24,7 +24,7 @@
  * EVEN MORE EXTRA CREDIT STEP 14: Add whatever code is necessary to your main method below to have an additional column for A*h3 to your tables
  *   (make sure you update the text file you submit for STEP 9).  You can decide on the value of a, but it should be relatively close to 1,
  *   such as 1.1, 1.2, etc.
- * EVEN MORE EXTRA CREDIT STEP 15: Desscribe in this comment any cost savings from using this heuristic relative to using Manhattan Distance.
+ * EVEN MORE EXTRA CREDIT STEP 15: Describe in this comment any cost savings from using this heuristic relative to using Manhattan Distance.
  * EVEN MORE EXTRA CREDIT STEP 16: Also in this comment, indicate whether this heuristic is admissible.
  *          
  */
@@ -65,18 +65,76 @@ public class SlidingTileComparison {
 		//             computing the averages since number of expanded states and number of generated states are integers.
 		//             If total is the sum of the number of expanded states across the 10 runs at a given length, and you do total/10
 		//             you will get the wrong answer (if total is an int).
+		int optimal = 2;
+		int index = 0;
+		double averages[][] = new double[5][6];
 		
-		SlidingTilePuzzle puzzle1 = new SlidingTilePuzzle(3, 3, 15);
-		System.out.println("THIS IS THE PUZZLE:\n" + puzzle1 + "\n");
-		SlidingTilePuzzle puzzle2 = puzzle1;
-		//SlidingTilePuzzleSolver temp = new SlidingTilePuzzleSolver();
-		NumMisplacedTiles numMisTiles = new NumMisplacedTiles();
-		ManhattanDistance mDistance = new ManhattanDistance();
-		//SlidingTilePuzzleSolver solve = new SlidingTilePuzzleSolver();
-		System.out.println("Start\n" + SlidingTilePuzzleSolver.uniformCostSearch(puzzle1) + "\nEnd");
-		System.out.println("Start\n" + SlidingTilePuzzleSolver.AStarSearch(puzzle2, numMisTiles));
-		//System.out.println(test.toString());
-		//System.out.println(blah.h(test));
-		//System.out.println(blah2.h(test));
+		SlidingTilePuzzle puzzle;
+		while (optimal <= 10)
+		{
+			double avgExpanded = 0.0;
+			double avgGenerated = 0.0;
+			for (int i = 0; i < 10; i++) {
+				//System.out.println("Loop " + i);
+				puzzle = new SlidingTilePuzzle(3, 3, optimal);
+				//System.out.println("THIS IS THE PUZZLE:\n" + puzzle + "\n");
+				SlidingTilePuzzleSolver.uniformCostSearch(puzzle);
+				avgExpanded += SlidingTilePuzzleSolver.getNumExpandedStates();
+				System.out.println(avgExpanded);
+				avgGenerated += SlidingTilePuzzleSolver.getNumGeneratedStates();
+				System.out.println(avgGenerated);
+			}
+			
+			averages[index][0] = avgExpanded / 10.0;
+			averages[index][3] = avgGenerated / 10.0;
+			avgExpanded = 0.0;
+			avgGenerated = 0.0;
+			
+			for (int i = 0; i < 10; i++) {
+				//System.out.println("Loop " + i);
+				puzzle = new SlidingTilePuzzle(3, 3, optimal);
+				//System.out.println("THIS IS THE PUZZLE:\n" + puzzle + "\n");
+				SlidingTilePuzzleSolver.AStarSearchMisplacedTiles(puzzle);
+				avgExpanded += SlidingTilePuzzleSolver.getNumExpandedStates();
+				avgGenerated += SlidingTilePuzzleSolver.getNumGeneratedStates();
+			}
+			
+			averages[index][1] = avgExpanded / 10.0;
+			averages[index][4] = avgGenerated / 10.0;
+			avgExpanded = 0.0;
+			avgGenerated = 0.0;
+				
+			for (int i = 0; i < 10; i++) {
+				//System.out.println("Loop " + i);
+				puzzle = new SlidingTilePuzzle(3, 3, optimal);
+				//System.out.println("THIS IS THE PUZZLE:\n" + puzzle + "\n");
+				SlidingTilePuzzleSolver.AStarSearchManhattanDistance(puzzle);
+				avgExpanded += SlidingTilePuzzleSolver.getNumExpandedStates();
+				avgGenerated += SlidingTilePuzzleSolver.getNumGeneratedStates();
+			}
+			//puzzle = new SlidingTilePuzzle(3, 3, 10);
+			//System.out.println(SlidingTilePuzzleSolver.AStarSearchManhattanDistance(puzzle));
+	
+			averages[index][2] = avgExpanded / 10.0;
+			averages[index][5] = avgGenerated / 10.0;
+			avgExpanded = 0.0;
+			avgGenerated = 0.0;
+
+			optimal += 2;
+			System.out.println("Optimal: " + optimal);
+			index++;
+		}		
+		System.out.println("Number of Expanded States\tNumber of Generated States");
+		System.out.println("L\tUCS\tA*h1\tA*h2\tL\tUCS\tA*h1\tA*h2");
+		System.out.println("2\t" + averages[0][0] + "\t" + averages[0][1] + "\t" + averages[0][2] + 
+					   "\t2\t" + averages[0][3] + "\t" + averages[0][4] + "\t" + averages[0][5]);
+		System.out.println("4\t" + averages[1][0] + "\t" + averages[1][1] + "\t" + averages[1][2] + 
+					   "\t4\t" + averages[1][3] + "\t" + averages[1][4] + "\t" + averages[1][5]);
+		System.out.println("6\t" + averages[2][0] + "\t" + averages[2][1] + "\t" + averages[2][2] + 
+					   "\t6\t" + averages[2][3] + "\t" + averages[2][4] + "\t" + averages[2][5]);
+		System.out.println("8\t" + averages[3][0] + "\t" + averages[3][1] + "\t" + averages[3][2] + 
+					   "\t8\t" + averages[3][3] + "\t" + averages[3][4] + "\t" + averages[3][5]);
+		System.out.println("10\t" + averages[4][0] + "\t" + averages[4][1] + "\t" + averages[4][2] + 
+					   "\t10\t" + averages[4][3] + "\t" + averages[4][4] + "\t" + averages[4][5]);
 	}
 }

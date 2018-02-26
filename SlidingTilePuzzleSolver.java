@@ -33,67 +33,80 @@ public class SlidingTilePuzzleSolver {
 	
 	//KERFUFFLE: The actual start to the puzzle is not printed
 	public static ArrayList<SlidingTilePuzzle> uniformCostSearch(SlidingTilePuzzle start) {
+		numExpanded = 0;
+		numGenerated = 0;
+		
 		// STEP 3: Implement Uniform Cost Search.  Read the comment above carefully for what this method should return.
 		SlidingTilePuzzle node = start;
 		ArrayList<SlidingTilePuzzle> successors = new ArrayList<SlidingTilePuzzle>();
 		MinHeapPQ<SlidingTilePuzzle> frontier = new MinHeapPQ<SlidingTilePuzzle>();
-		//frontier.ignoreHereForTesting();
+
 		HashMap<SlidingTilePuzzle, Integer> explored = new HashMap<SlidingTilePuzzle, Integer>();
 		HashMap<SlidingTilePuzzle, SlidingTilePuzzle> back = new HashMap<SlidingTilePuzzle, SlidingTilePuzzle>();
 		
 		frontier.offer(start, 0);
 		while (!frontier.isEmpty())
 		{
-
-
-			int p = frontier.peekPriority();
+			//System.out.println("Hi I'm UCS: " + !frontier.isEmpty());
+			int cost = frontier.peekPriority();
 			node = frontier.poll();
-			//System.out.println(node.getSuccessors());
-			//System.out.println(p);
+
 			if(node.isGoalState()) {
 				SlidingTilePuzzle solution = node;
 				while (back.get(solution) != null) {
-					//System.out.println(explored.get(solution));
 					successors.add(0, solution);
 					solution = back.get(solution);
-					
 				}
-				//System.out.println("????");
-				//System.out.println(node);
+				successors.add(0, start);
+				numGenerated = explored.size();
 				return successors;
 			}
-			
-			
-			
-			// You can then add to it with put:
 
-			explored.put(node, p);
-			//System.out.println("\np: " + p + " \nnode:\n " + node);
-			p++;
-
-			
-			// you can find a state's f value with get			
-			
-			// Likewise, you can use a HashMap to store backpointers:
-			
-			//System.out.println("Start Loop");
+			explored.put(node, cost);
+			cost++;
+			numExpanded++;
 			for (SlidingTilePuzzle STP : node.getSuccessors())
 			{
+				
+				if (!explored.containsKey(STP))
+				{
+					frontier.offer(STP, cost);
+					back.put(STP, node);
+				}
+/*				//cost++;
+				//KERFUFFLE: Change it to be outside for loop????
+				//System.out.println(cost++);
 				if (!explored.containsKey(STP)) {
+					//if (frontier.inPQ(STP))
+						//System.out.println(frontier.getPriority(STP) + " " + cost);
 					if (!frontier.inPQ(STP)) {
-						//System.out.println(p);
-						frontier.offer(STP, p);
+						//cost++;
+						frontier.offer(STP, cost);
 						back.put(STP, node);
 					}
-					else if (frontier.inPQ(STP) && frontier.getPriority(STP) > p)
+					
+					else if (frontier.inPQ(STP) && frontier.getPriority(STP) > cost)
 					{
-						//System.out.println("ELSE IF");
+						//System.out.println("DOES THIS WORK?");
 						node = STP;
 						back.put(STP, node);
 					}
+				}*/
+				
+				/*if (!explored.containsKey(STP) || !frontier.inPQ(STP)) {
+						frontier.offer(STP, cost);
+						System.out.println(cost);
+						back.put(STP, node);
 				}
+				else if (frontier.inPQ(STP) && frontier.getPriority(STP) < cost)
+				{
+						//System.out.println("DOES THIS WORK?");
+						node = STP;
+						back.put(STP, node);
+				}*/
 			}
 		}
+		numGenerated = explored.size();
 		return null;
 	}
 	
@@ -108,78 +121,77 @@ public class SlidingTilePuzzleSolver {
 	 * @return The solution path, i.e., the sequence of states from the start state to the goal state.  Returns null if instance has no solution.
 	 */
 	
-	//KERFUFFLE: There is a fuckton of nulls
 	public static ArrayList<SlidingTilePuzzle> AStarSearch(SlidingTilePuzzle start, SlidingTilePuzzleHeuristic h) {
 		// STEP 4: Implement A* Search.  Read the comment above carefully for what this method should return.
-		SlidingTilePuzzle node = start;
-		ArrayList<SlidingTilePuzzle> successors = new ArrayList<SlidingTilePuzzle>();
-		MinHeapPQ<SlidingTilePuzzle> frontier = new MinHeapPQ<SlidingTilePuzzle>();
-		//frontier.ignoreHereForTesting();
-		HashMap<SlidingTilePuzzle, Integer> explored = new HashMap<SlidingTilePuzzle, Integer>();
-		HashMap<SlidingTilePuzzle, SlidingTilePuzzle> back = new HashMap<SlidingTilePuzzle, SlidingTilePuzzle>();
 		
-		frontier.offer(start, 0);
+		//Reset the static variables numExpanded and numGenerated for a new search
+		numExpanded = 0;
+		numGenerated = 0;
+		
+		//Set up of hash maps and priority queue
+		ArrayList<SlidingTilePuzzle> successors = new ArrayList<SlidingTilePuzzle>(); //Result of shortest path for a given puzzle
+		MinHeapPQ<SlidingTilePuzzle> frontier = new MinHeapPQ<SlidingTilePuzzle>(); //Priority queue to hold states to evaluate
+
+		HashMap<SlidingTilePuzzle, Integer> explored = new HashMap<SlidingTilePuzzle, Integer>(); //States already evaluated
+		HashMap<SlidingTilePuzzle, SlidingTilePuzzle> back = new HashMap<SlidingTilePuzzle, SlidingTilePuzzle>(); //Backpointers
+		
+		//Populate queue with start and heuristic cost (h) of start
+		frontier.offer(start, h.h(start));
+		
+		//While a state exists in the priority queue
 		while (!frontier.isEmpty())
 		{
-
-
-			int cost = frontier.peekPriority();
-			node = frontier.poll();
+			//Take the cost (g) of the element with the lowest priority value
+			int g = frontier.peekPriority();
 			
-			if(node.isGoalState()) {
+			//Assign state to a variable and pull it from the priority queue; iterate numExpanded
+			SlidingTilePuzzle node = frontier.poll();
+			numExpanded++;
+			
+			//Check if current state is the goal
+			if(node.isGoalState()) //Goal has been reached
+			{
+				//Begin populating successors with states that lead to shortest solution path
 				SlidingTilePuzzle solution = node;
-				while (back.get(solution) != null) {
-					//System.out.println(explored.get(solution));
+				
+				while (back.get(solution) != null)
+				{
 					successors.add(0, solution);
 					solution = back.get(solution);
-					
 				}
-				//System.out.println("????");
-				//System.out.println(node);
+				//KERFUFFLE: Not sure if this is needed
+				successors.add(0, start);
+				
+				//Assign numGenerated value to number of explored states
+				numGenerated = explored.size();
 				return successors;
 			}
-			
-			
-			
-			
-			// You can then add to it with put:
 
-			explored.put(node, cost);
-			//System.out.println("\np: " + p + " \nnode:\n " + node);
-			//p++;
-
+			//Not the goal, update explored hash map with current state and its cost
+			explored.put(node, g);
 			
-			// you can find a state's f value with get			
+			//Assign cost to that of g for current states successors
+			//KERFUFFLE: Is there a better way to handle this?
+			g = (g - h.h(node) + 1);
 			
-			// Likewise, you can use a HashMap to store backpointers:
-			
-			//System.out.println("Start Loop");
-			//boolean isBetter;
-			for (SlidingTilePuzzle STP : node.getSuccessors())
+			for (SlidingTilePuzzle STP : node.getSuccessors()) //Iterate through each successor of current state
 			{
-				cost = cost + h.h(STP);
-				if(!explored.containsKey(STP) || cost < explored.get(STP)) {
-					//explored.put(STP, cost + h.h(STP));
+				//Calculate cost (f) of the successor cost (g) + heuristic cost (h)
+				int f = g + h.h(STP);		
+				if(!explored.containsKey(STP) || f < explored.get(STP))
+				{
+					frontier.offer(STP, f);
 					back.put(STP, node);
 					
-					if(!explored.containsKey(STP))
-					{
-						frontier.offer(STP, cost + h.h(STP));
-					}
-					else
-					{
-						frontier.offer(STP, cost + h.h(STP));
-						
-					}
-					explored.put(STP, cost + h.h(STP));
+					//KERFUFFLE: Potential culprit for the generated states being greater than UCS
+					//			 Commented out for now
+					//explored.put(STP, f);
 				}
-					
-				//if (isBetter)
-				//{
-				//	cost++;
-				//}
 			}
-		}		
+		} //Null result, unsolvable puzzle
+		
+		//Assign numGenerated value to number of explored states
+		numGenerated = explored.size();
 		return null;
 	}
 	
@@ -310,14 +322,14 @@ class ManhattanDistance implements SlidingTilePuzzleHeuristic {
 		//A/N: One way to get the correct coords for a fixed number is to compare if correct num is > columns in a row.
 		//If so then proceed to iterate the row and add the column length to the difference
 
-		int i = 0;
+		//int i = 0;
 		int sum = 0;
 		int rows = state.numRows();
 		int columns = state.numColumns();
-		int length = rows * columns;
+		//int length = rows * columns;
 
 		
-		Tuple[] goalState = new Tuple[length];
+/*		SlidingTilePuzzle goalState = state.g
 		
 		
 		for (int j = 0; j < rows; j++) {
@@ -325,38 +337,40 @@ class ManhattanDistance implements SlidingTilePuzzleHeuristic {
 				goalState[i] = new Tuple(j, k);
 				i++;
 			}
-		}
+		}*/
 		
-		String s = "";
+/*		String s = "";
 		for (int j = 0; j < goalState.length; j++) {
 			s += "(" + goalState[j].x + ", " + goalState[j].y + ")\t";
 			s += "\n";
 		}
-		System.out.println(s);
+		System.out.println(s);*/
 		
 		
-		i = 1;
-		int x;
-		int y;
+		//i = 1;
+		//int x;
+		//int y;
 
 		for (int j = 0; j < rows; j++) {
 			for (int k = 0; k < columns; k++) {
 				int pos = state.getTile(j, k);
-				if (pos == 0) {
-					pos = 9;
-					x = goalState[pos - 1].x;
-					y = goalState[pos - 1].y;
+				if (pos != 0) {
+					//pos = 9;
+//					x = goalState[pos - 1].x;
+//					y = goalState[pos - 1].y;
+					int goalRow = (int) Math.floor((pos-1)/rows);
+					int goalColumn = (pos-1)%columns;
 					//System.out.println("0 is " + (Math.abs(j - x) + Math.abs(k - y)) + " away");
-					sum += (Math.abs(j - x) + Math.abs(k - y));
+					sum += (Math.abs(j - goalRow) + Math.abs(k - goalColumn));
 				}
-				else if (pos != i) {
+/*				else if (pos != i) {
 					x = goalState[pos - 1].x;
 					y = goalState[pos - 1].y;
 					//System.out.println("j : " + j + " k: " + k + " x: " + x + " y: " + y);
 					//System.out.println(pos + " is " + (Math.abs(j - x) + Math.abs(k - y)) + " away");
 					sum += (Math.abs(j - x) + Math.abs(k - y));
-				}
-				i++;
+				}*/
+				//i++;
 			}
 		}
 		return sum;
@@ -367,7 +381,7 @@ class ManhattanDistance implements SlidingTilePuzzleHeuristic {
 interface SlidingTilePuzzleHeuristic {
 	
 	/**
-	 * Computes a heuruistic estimate of cost to get from state to goal.
+	 * Computes a heuristic estimate of cost to get from state to goal.
 	 */
 	int h(SlidingTilePuzzle state);
 }	
